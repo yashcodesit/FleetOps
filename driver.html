@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Deliveries — FleetOps</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#10151F; --panel:#1B2436; --line-dark:#2C384F;
+    --paper:#F6F7F9; --line:#DDE2E8; --card:#ffffff;
+    --signal:#F5A623; --transit:#1FB6A4; --alert:#E5484D;
+    --text-1:#10151F; --text-2:#5B6472; --text-2-inv:#9AA6B8; --text-1-inv:#F5F7F9;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:'Inter',sans-serif; color:var(--text-1); background:var(--paper); display:flex; justify-content:center;}
+  h1,h2,h3{font-family:'Space Grotesk',sans-serif; font-weight:600;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  a{color:inherit; text-decoration:none;}
+
+  .phone{width:100%; max-width:420px; min-height:100vh; background:var(--paper); display:flex; flex-direction:column;}
+
+  /* HEADER */
+  .top{background:var(--ink); color:var(--text-1-inv); padding:22px 20px 26px;}
+  .top-row{display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;}
+  .brand{display:flex; align-items:center; gap:7px; font-family:'Space Grotesk'; font-weight:700; font-size:15.5px;}
+  .brand .dot{width:7px; height:7px; border-radius:2px; background:var(--signal);}
+  .back-link{font-size:12.5px; color:var(--text-2-inv);}
+  .greeting{font-size:20px; margin-bottom:4px;}
+  .sub{font-size:13px; color:var(--text-2-inv);}
+  .progress-wrap{margin-top:18px;}
+  .progress-labels{display:flex; justify-content:space-between; font-size:12px; color:var(--text-2-inv); margin-bottom:8px;}
+  .progress-bar{height:6px; background:#28324A; border-radius:100px; overflow:hidden;}
+  .progress-fill{height:100%; width:40%; background:var(--signal); border-radius:100px;}
+
+  /* CONTENT */
+  .content{padding:20px; flex:1;}
+  .section-title{font-size:13px; font-weight:600; color:var(--text-2); text-transform:uppercase; letter-spacing:.04em; margin:18px 0 10px;}
+  .section-title:first-child{margin-top:0;}
+
+  .stop-card{
+    background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px;
+    margin-bottom:12px; display:flex; flex-direction:column; gap:10px;
+  }
+  .stop-card.current{border:1.5px solid var(--signal); box-shadow:0 4px 18px -8px rgba(245,166,35,0.35);}
+  .stop-top{display:flex; justify-content:space-between; align-items:flex-start;}
+  .stop-top .seq{
+    width:26px; height:26px; border-radius:50%; background:var(--ink); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-family:'Space Grotesk'; font-size:12px; font-weight:600; flex-shrink:0;
+  }
+  .stop-info{flex:1; margin-left:10px;}
+  .stop-info .name{font-size:14.5px; font-weight:600;}
+  .stop-info .addr{font-size:12.5px; color:var(--text-2); margin-top:2px;}
+  .pill{font-size:10.5px; font-weight:600; padding:4px 9px; border-radius:100px; font-family:'IBM Plex Mono'; flex-shrink:0;}
+  .pill.pending{background:#EDEFF2; color:var(--text-2);}
+  .pill.transit{background:rgba(245,166,35,0.14); color:#B97300;}
+  .pill.delivered{background:rgba(31,182,164,0.14); color:#137F72;}
+  .pill.failed{background:rgba(229,72,77,0.14); color:var(--alert);}
+  .stop-meta{display:flex; gap:14px; font-size:12px; color:var(--text-2); padding-left:36px;}
+  .stop-actions{display:flex; gap:8px; padding-left:36px;}
+  .mini-btn{
+    flex:1; text-align:center; padding:9px 0; border-radius:8px; font-size:12.5px; font-weight:600; cursor:pointer; border:1px solid var(--line); background:#fff;
+  }
+  .mini-btn.primary{background:var(--ink); color:#fff; border-color:var(--ink);}
+  .mini-btn.ghost{color:var(--text-2);}
+
+  .done-row{
+    display:flex; align-items:center; gap:10px; padding:12px 4px; border-bottom:1px solid var(--line);
+  }
+  .done-row:last-child{border-bottom:none;}
+  .done-row .check{width:20px; height:20px; border-radius:50%; background:rgba(31,182,164,0.14); color:var(--transit); display:flex; align-items:center; justify-content:center; font-size:11px; flex-shrink:0;}
+  .done-row .name{font-size:13.5px; font-weight:500; flex:1;}
+  .done-row .time{font-size:11.5px; color:var(--text-2); font-family:'IBM Plex Mono';}
+
+  /* BOTTOM NAV */
+  .bottom-nav{
+    display:flex; border-top:1px solid var(--line); background:#fff; padding:10px 8px 16px; position:sticky; bottom:0;
+  }
+  .bottom-nav a{flex:1; text-align:center; font-size:11px; color:var(--text-2); display:flex; flex-direction:column; align-items:center; gap:5px;}
+  .bottom-nav a.active{color:var(--ink); font-weight:600;}
+  .bottom-nav .ic{width:18px; height:18px; border-radius:5px; background:currentColor; opacity:.35;}
+  .bottom-nav a.active .ic{background:var(--signal); opacity:1;}
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="top">
+    <div class="top-row">
+      <div class="brand"><span class="dot"></span>FleetOps</div>
+      <a href="index.html" class="back-link">Exit driver view</a>
+    </div>
+    <div class="greeting">Hey, Aleks 👋</div>
+    <div class="sub">Route RT-142 · 5 stops today</div>
+    <div class="progress-wrap">
+      <div class="progress-labels"><span>2 of 5 delivered</span><span>40%</span></div>
+      <div class="progress-bar"><div class="progress-fill"></div></div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="section-title">Up next</div>
+
+    <div class="stop-card current">
+      <div class="stop-top">
+        <div class="seq">3</div>
+        <div class="stop-info">
+          <div class="name">Fairview Apartments, Unit 4B</div>
+          <div class="addr">118 Fairview Rd — leave with front desk if no answer</div>
+        </div>
+        <div class="pill transit">IN TRANSIT</div>
+      </div>
+      <div class="stop-meta">
+        <span>📍 0.4 mi away</span>
+        <span>🕐 Window: 1:00–2:00 PM</span>
+      </div>
+      <div class="stop-actions">
+        <div class="mini-btn ghost">Report issue</div>
+        <div class="mini-btn primary">Mark delivered</div>
+      </div>
+    </div>
+
+    <div class="stop-card">
+      <div class="stop-top">
+        <div class="seq">4</div>
+        <div class="stop-info">
+          <div class="name">Oakview Clinic</div>
+          <div class="addr">44 Oakview Ave — deliver to reception</div>
+        </div>
+        <div class="pill pending">PENDING</div>
+      </div>
+      <div class="stop-meta">
+        <span>📍 1.1 mi away</span>
+        <span>🕐 Window: 2:00–3:00 PM</span>
+      </div>
+    </div>
+
+    <div class="stop-card">
+      <div class="stop-top">
+        <div class="seq">5</div>
+        <div class="stop-info">
+          <div class="name">Riverside Storage, Unit 4</div>
+          <div class="addr">9 Riverside Ct — gate code 4471</div>
+        </div>
+        <div class="pill pending">PENDING</div>
+      </div>
+      <div class="stop-meta">
+        <span>📍 2.3 mi away</span>
+        <span>🕐 Window: 3:00–4:00 PM</span>
+      </div>
+    </div>
+
+    <div class="section-title">Completed today</div>
+    <div class="stop-card" style="padding:6px 16px;">
+      <div class="done-row"><div class="check">✓</div><div class="name">Maple &amp; 5th District</div><div class="time">09:12 AM</div></div>
+      <div class="done-row"><div class="check">✓</div><div class="name">Harbor Warehouse</div><div class="time">10:41 AM</div></div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <a href="#" class="active"><span class="ic"></span>Today</a>
+    <a href="#"><span class="ic"></span>History</a>
+    <a href="#"><span class="ic"></span>Profile</a>
+  </div>
+</div>
+
+</body>
+</html>
